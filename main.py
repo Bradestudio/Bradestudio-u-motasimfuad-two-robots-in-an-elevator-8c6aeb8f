@@ -10,26 +10,43 @@ filesystem, no network).
 
 import os
 
+MAX_LEN = 200
+
 LINE = (
     "My awkwardness sensor just hit 94%, so let's both blame the doors "
     "and never mention floor three."
 )
 
 
-def main():
+def build_entry():
+    """Return the single entry line, checked against the 1-200 char gate."""
     line = LINE.strip()
-    assert 1 <= len(line) <= 200, "entry must be 1-200 characters"
+    assert 1 <= len(line) <= MAX_LEN, "entry must be 1-200 characters"
     assert "\n" not in line, "entry must be a single line"
-    out_dir = "/output"
+    return line
+
+
+def write_entry(line):
+    """Write the line to <out dir>/entry.txt and read it back to verify.
+
+    The output directory defaults to /output (the grading sandbox) and
+    can be overridden with MAKEFUN_OUTPUT_DIR for local testing.
+    """
+    out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
     os.makedirs(out_dir, exist_ok=True)
     path = os.path.join(out_dir, "entry.txt")
     with open(path, "w", encoding="utf-8") as f:
         f.write(line + "\n")
-    # Read back and verify what the grader will see: one line, 1-200 chars.
     with open(path, encoding="utf-8") as f:
         written = f.read()
     assert written.strip() == line, "written entry differs from the line"
-    assert 1 <= len(written.strip()) <= 200, "written entry outside the gate"
+    assert 1 <= len(written.strip()) <= MAX_LEN, "written entry outside the gate"
+    return path
+
+
+def main():
+    line = build_entry()
+    write_entry(line)
 
 
 if __name__ == "__main__":
